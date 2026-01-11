@@ -1,0 +1,118 @@
+'use client';
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Eye, EyeOff, User, Mail, Lock, ArrowLeft, Check } from "lucide-react";
+import { text } from "stream/consumers";
+import { supabase } from "@/lib/supabase";
+
+
+export default function LoginPage() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [formdata, setFormData] = useState({
+    email: "",
+    password: "",
+  });
+
+  const router = useRouter();
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFormData((prevData) => ({  ...prevData, [name]: value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!formdata.password) {
+      alert("Passwords is required.");
+      return;
+    }
+
+    try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: formdata.email,
+            password: formdata.password,
+          })
+          if (error) {
+            alert(error.message);
+            return;
+          }
+          console.log("Login Berhasil:", data);
+          router.push("/dashboard");
+        } catch (error) {
+          console.error("Gagal saat Login:" , error);
+        }
+      };
+
+  return (
+   <div className="min-h-screen  bg-linear-to-br from-blue-50 via white to-blue-100 flex items-center justify-center p-4">
+    <div className="w-full max-w-md">
+      <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-100 p-8 relative overflow-hidden">
+        <div className="absolute inset-0 linear-to-br from-blue-500/5 to-blue-600/10 rounded-2xl"/>
+
+        <div className="relative z-10">
+          <div className="text-center mb-6">
+            <div className="w-16 h-16 mx-auto bg-linear-to-br from-blue-500/5 to-blue-600 rounded-2xl flex items-center justify-center mb-4 shadow-lg">
+              <User className="w-8 h-8 text-white"/>
+            </div>
+            <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
+            <p className="text-gray-600">Sign in to your account</p>
+          </div>
+
+           <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700" htmlFor="email">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                <input
+                  type="text"
+                  name="email"
+                  value={formdata.email}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Your email address"
+                  required
+                />
+              </div>
+          </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-gray-700" htmlFor="password">Password</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400"/>
+                <input
+                  type={showPassword ? "text" : "password"}
+                  name="password"
+                  value={formdata.password}
+                  onChange={handleInputChange}
+                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-white/70 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Your Password"
+                  required
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 focus:outline-none"
+                >
+                  {showPassword ? <EyeOff className="w-5 h-5"/> : <Eye className="w-5 h-5"/>}
+                  </button>
+              </div>
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-blue-600 from-blue-500 to-blue-600 text-white py-3 rounded-2xl font-medium hover:from-blue-600 hover:to-blue-700 transform hover:scale-[1.02] shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none transition-all"
+          >
+            Login
+          </button>
+          <div className="text-center">
+            <p className="text-sm text-gray-600">
+              Already have an account?
+              <a href="/auth/login" className="text-blue-600 hover:underline">Login</a>
+            </p>
+          </div>
+      </form>
+        </div>
+    </div>  
+  </div>
+ </div>
+  );
+}
